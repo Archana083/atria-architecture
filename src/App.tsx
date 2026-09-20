@@ -1,5 +1,6 @@
 import {useEffect,useMemo,useState} from 'react'
 import {ArrowUpRight,ChevronLeft,ChevronRight,Menu,X,MoveUpRight} from 'lucide-react'
+import './pages.css'
 
 type Project={name:string;type:string;year:string;location:string;image:string;description:string}
 const projects:Project[]=[
@@ -11,6 +12,35 @@ const projects:Project[]=[
 {name:'Lumen Gallery',type:'Commercial',year:'2023',location:'New Delhi, India',image:'https://images.unsplash.com/photo-1511818966892-d7d671e672a2?auto=format&fit=crop&w=1500&q=90',description:'A gallery conceived as a sequence of light-filled rooms and precise thresholds.'}
 ]
 const filters=['All','Residential','Commercial','Interior']
+
+function PageHeader(){
+ const links=[['Work','/work'],['Studio','/studio'],['Services','/services']]
+ return <header className="page-nav">
+  <a className="logo" href="/"><span className="logo-box">A</span><span>ATRIA<span className="thin"> / STUDIO</span></span></a>
+  <nav>{links.map(([label,href])=><a key={label} href={href}>{label}</a>)}<a className="contact-btn" href="/#contact">Start a project <ArrowUpRight size={15}/></a></nav>
+  <a className="page-back" href="/">Back to home</a>
+ </header>
+}
+
+function PageFooter(){
+ return <footer><div className="footer-logo">ATRIA / STUDIO</div><div>Mumbai · Goa · Everywhere<br/><span>hello@atriastudio.example</span></div><div>© 2026 Atria Studio</div></footer>
+}
+
+function InnerPage({kind}:{kind:'work'|'studio'|'services'}){
+ const content={
+  work:{eyebrow:'01 — SELECTED WORK',title:<><span>A considered</span><i> body of work.</i></>,intro:'A collection of places shaped by their context, their climate and the rituals of everyday life.',image:'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1800&q=90'},
+  studio:{eyebrow:'02 — THE STUDIO',title:<><span>Quietly</span><i> particular.</i></>,intro:'Atria is an independent architecture and interiors studio based between Mumbai and Goa. We make spaces with a strong sense of place and a soft edge.',image:'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1800&q=90'},
+  services:{eyebrow:'03 — WHAT WE DO',title:<><span>From first</span><i> line to last detail.</i></>,intro:'We work across scales, bringing the same care to a private home, a hospitality destination or a brand environment.',image:'https://images.unsplash.com/photo-1511818966892-d7d671e672a2?auto=format&fit=crop&w=1800&q=90'}
+ }[kind]
+ const serviceCopy=['Architecture','Interior Architecture','Hospitality & Retail','Brand Environments']
+ return <div className="inner-page"><PageHeader/><main>
+  <section className="inner-hero"><div className="inner-hero-image" style={{backgroundImage:`url(${content.image})`}}/><div className="inner-shade"/><div className="inner-hero-copy reveal"><span className="overline">{content.eyebrow}</span><h1>{content.title}</h1><p>{content.intro}</p></div></section>
+  {kind==='work'&&<section className="inner-section project-page-grid"><div className="inner-label tiny">A/01 — PROJECT INDEX</div><div className="inner-project-list">{projects.map((p,i)=><a href={`/#project-${i}`} className="inner-project" key={p.name}><span>{String(i+1).padStart(2,'0')}</span><div><h2>{p.name}</h2><p>{p.type} · {p.location}</p></div><strong>{p.year}</strong><ArrowUpRight size={18}/></a>)}</div></section>}
+  {kind==='studio'&&<section className="inner-section studio-page"><div className="inner-label tiny">A/02 — OUR APPROACH</div><div><h2>We make room<br/><i>for life.</i></h2><p>Our process starts by paying attention: to the light across a site, the way people move through a room, the texture that will age well. We believe the best architecture feels inevitable because it belongs exactly where it is.</p><p>Small teams, direct conversations and a close relationship with making keep every decision connected to the original idea.</p><a className="line-link dark-link" href="/#contact">Start a conversation <ArrowUpRight size={15}/></a></div></section>}
+  {kind==='services'&&<section className="inner-section services-page"><div className="inner-label tiny">A/03 — CAPABILITIES</div><div className="inner-service-list">{serviceCopy.map((name,i)=><div className="inner-service" key={name}><span>0{i+1}</span><div><h2>{name}</h2><p>{['From site strategy to handover, we shape architecture that responds to its setting.','Material, furniture and light come together to make interiors that feel collected, not decorated.','Distinctive places for stays, meals and gathering, designed around the guest experience.','Physical spaces that translate a brand’s character into an atmosphere people remember.'][i]}</p></div><ArrowUpRight size={18}/></div>)}</div></section>}
+  <section className="inner-cta"><span className="tiny">04 — HAVE A SPACE IN MIND?</span><h2>Let’s make<br/><i>something lasting.</i></h2><a className="contact-btn" href="/#contact">Get in touch <ArrowUpRight size={15}/></a></section>
+ </main><PageFooter/></div>
+}
 
 function App(){
  const [filter,setFilter]=useState('All')
@@ -26,13 +56,15 @@ function App(){
   return()=>{window.removeEventListener('scroll',onScroll);io.disconnect()}
  },[])
  const go=(id:string)=>{document.getElementById(id)?.scrollIntoView({behavior:'smooth'});setMenu(false)}
+ const pathname=window.location.pathname
+ if(pathname==='/work'||pathname==='/studio'||pathname==='/services') return <InnerPage kind={pathname.slice(1) as 'work'|'studio'|'services'}/>
  return <div className="site">
   <header className={`nav ${scrolled?'solid':''}`}>
    <button className="logo" onClick={()=>go('home')}><span className="logo-box">A</span><span>ATRIA<span className="thin"> / STUDIO</span></span></button>
-   <nav>{['Work','Studio','Services'].map(x=><button key={x} onClick={()=>go(x.toLowerCase())}>{x}</button>)}<button className="contact-btn" onClick={()=>go('contact')}>Start a project <ArrowUpRight size={15}/></button></nav>
+   <nav>{['Work','Studio','Services'].map(x=><a key={x} href={`/${x.toLowerCase()}`}>{x}</a>)}<button className="contact-btn" onClick={()=>go('contact')}>Start a project <ArrowUpRight size={15}/></button></nav>
    <button className="menu" onClick={()=>setMenu(v=>!v)} aria-label="Menu">{menu?<X/>:<Menu/>}</button>
   </header>
-  {menu&&<div className="mobile-nav">{['Work','Studio','Services','Contact'].map(x=><button key={x} onClick={()=>go(x.toLowerCase())}>{x}</button>)}</div>}
+  {menu&&<div className="mobile-nav">{['Work','Studio','Services'].map(x=><a key={x} href={`/${x.toLowerCase()}`}>{x}</a>)}<button onClick={()=>go('contact')}>Contact</button></div>}
   <main id="home">
    <section className="hero">
     <div className="hero-bg"/>
